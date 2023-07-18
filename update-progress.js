@@ -13,7 +13,7 @@ const updated = md
   .split("\n")
   .map((line) => {
     if (isProgressLine(line)) {
-      return `달성도: ![](${PROGRESS_BAR_URL}/${progress})`;
+      return `![](${PROGRESS_BAR_URL}/${progress})`;
     }
     return line;
   })
