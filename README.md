@@ -1,4 +1,4 @@
-![](https://geps.dev/progress/100)
+![](https://geps.dev/progress/96)
 
 ✅ **프로젝트**
 
@@ -135,16 +135,16 @@ _→ next-seo 라이브러리 적용중_
 
 - [x] 크로스 브라우저를 개발하기 위해 CSS 속성 앞에 브라우저 별 접두사(Vender Prefix)를 사용하였는가?
       예시) -webkit-, -moz-, -o-, -ms-
-- [x] Safari 브라우저에서 특정 UI가 Chrome 브라우저와 동일하게 표시 되는가?
+- [ ] Safari 브라우저에서 특정 UI가 Chrome 브라우저와 동일하게 표시 되는가?
       예시) 가로 스크롤 바, 세로 스크롤 바
 
 **✅ 다국어 설정 `Advanced`**
 
 `**모듈 설정**`
 
-- [x] next-i18next.config 파일을 생성하고 locale 설정을 하였는가
+- [ ] next-i18next.config 파일을 생성하고 locale 설정을 하였는가
       예시) 언어 초기값 설정, 사용되는 언어 목록 등
-- [x] next-i18next.config 모듈을 next-config에서 import 하였는가?
+- [ ] next-i18next.config 모듈을 next-config에서 import 하였는가?
 - [x] 다국어 기능이 적용 될 json 파일을 생성하였는가?
       예시) about페이지에 사용될 json파일 경로: public/locales/en/about.json
 
