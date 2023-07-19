@@ -3,26 +3,96 @@ const fs = require("fs");
 const CHECK_LIST_MD_PATH = "./README.md";
 const PROGRESS_BAR_URL = "https://geps.dev/progress";
 
-const md = fs.readFileSync(CHECK_LIST_MD_PATH, { encoding: "utf-8" });
-const checkList = md.split("\n").filter(isCheckBox);
-const total = checkList.length;
-const checked = checkList.filter(isChecked).length;
-const progress = Math.round((checked / total) * 100);
+function main() {
+  const md = fs.readFileSync(CHECK_LIST_MD_PATH, { encoding: "utf-8" });
+  const parsedCheckList = md.split("\n").reduce(reducerForCheckList, []);
 
-const updated = md
-  .split("\n")
-  .map((line) => {
-    if (isProgressLine(line)) {
-      return `![](${PROGRESS_BAR_URL}/${progress})`;
-    }
-    return line;
-  })
-  .join("\n");
+  const basicList = parsedCheckList
+    .filter((line) => line.type === "basic")
+    .flatMap((item) => item.lines)
+    .filter((line) => !hasAdvancedFlag(line));
 
-fs.writeFileSync(CHECK_LIST_MD_PATH, updated);
+  const advancedList = [
+    ...parsedCheckList
+      .filter((line) => line.type === "basic")
+      .flatMap((item) => item.lines)
+      .filter(hasAdvancedFlag),
+    ...parsedCheckList
+      .filter((line) => line.type === "advanced")
+      .flatMap((item) => item.lines),
+  ];
 
-function isProgressLine(line) {
-  return line.includes(PROGRESS_BAR_URL);
+  const basicProgress = getProgressOfCheckList(basicList);
+  const advancedProgress = getProgressOfCheckList(advancedList);
+
+  loggerCheckList("Basic", basicProgress);
+  loggerCheckList("Advanced", advancedProgress);
+
+  const updated = md
+    .split("\n")
+    .map((line) => {
+      if (isBasicProgressLine(line)) {
+        return `![progress](${PROGRESS_BAR_URL}/${basicProgress.progress})`;
+      }
+      if (isAdvancedProgressLine(line)) {
+        return `![advanced-progress](${PROGRESS_BAR_URL}/${advancedProgress.progress})`;
+      }
+      return line;
+    })
+    .join("\n");
+
+  fs.writeFileSync(CHECK_LIST_MD_PATH, updated);
+}
+
+main();
+
+function reducerForCheckList(prev, line) {
+  const next = [...prev];
+  if (isSectionStart(line)) {
+    next.push({
+      title: line,
+      type: hasAdvancedFlag(line) ? "advanced" : "basic",
+      lines: [],
+    });
+  }
+  if (isCheckBox(line)) {
+    next[next.length - 1].lines.push(line);
+  }
+  return next;
+}
+
+function getProgressOfCheckList(checkList) {
+  const total = checkList.length;
+  const checked = checkList.filter(isChecked).length;
+  const progress = Math.round((checked / total) * 100);
+  return {
+    total,
+    checked,
+    progress,
+  };
+}
+
+function loggerCheckList(title, info) {
+  console.log(`
+  ${title}
+  - Total: ${info.total}
+  - Checked: ${info.checked}
+  - Progress: ${info.progress}%
+  `);
+}
+
+function isSectionStart(line) {
+  return line.includes("**✅");
+}
+
+function isBasicProgressLine(line) {
+  return line.includes(PROGRESS_BAR_URL) && line.includes("[progress]");
+}
+
+function isAdvancedProgressLine(line) {
+  return (
+    line.includes(PROGRESS_BAR_URL) && line.includes("[advanced-progress]")
+  );
 }
 
 function isChecked(line) {
@@ -30,6 +100,11 @@ function isChecked(line) {
 }
 
 function isCheckBox(line) {
-  const checkboxRgx = /^- \[(x|\s)\].*/g;
+  const checkboxRgx = /- \[(x|\s)\].*/g;
   return checkboxRgx.test(line);
+}
+
+function hasAdvancedFlag(line) {
+  const flagRgx = /\*\*.*Advanced.*\*\*/g;
+  return flagRgx.test(line);
 }
